@@ -25,81 +25,163 @@ using System.Collections.Generic;
 using Autofac.Extensions.DependencyInjection;
 using Autofac;
 using Microsoft.Extensions.Logging;
-using NetCoreTemplate.WebApi.Configuration;
+//using NetCoreTemplate.WebApi.Configuration;
 using NetCoreTemplate.Common;
 using NetCoreTemplate.Common.Models.Options;
 using NetCoreTemplate.Common.Models.Security;
 using System.Text;
+using Serilog.Core;
+using System.Threading.Tasks;
+using System.Linq;
+using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using Newtonsoft.Json.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace NetCoreTemplate.WebApi {
-  public class Startup {
-    private readonly IConfiguration _configuration;
-    private readonly ILogger<Startup> _logger;
+    public class Startup {
+        private readonly IConfiguration _configuration;
+        private readonly ILogger<Startup> _logger;
 
-    public Startup(IConfiguration configuration, ILogger<Startup> logger, IHostingEnvironment hostingEnvironment) {
-      _configuration = configuration;
-      _logger = logger;
+        public Startup(IConfiguration configuration, ILogger<Startup> logger, IHostingEnvironment hostingEnvironment) {
+            _configuration = configuration;
+            _logger = logger;
 
-      _logger.LogInformation($"Constructing for environment: {hostingEnvironment.EnvironmentName}");
+            _logger.LogInformation($"Constructing for environment: {hostingEnvironment.EnvironmentName}");
+        }
+
+        protected IContainer ApplicationContainer { get; private set; }
+
+        // This method gets called by the runtime. Use this method to add services to the container.
+        public IServiceProvider ConfigureServices(IServiceCollection services) {
+            _logger.LogInformation("Starting: Configure Services");
+
+            // Configure Logging
+            services.AddLogging();
+            services.AddSingleton(new LoggingLevelSwitch());
+
+            services.AddOptions();
+
+            // Configure Jwt
+            var jwtAppSettingOptions = _configuration.GetSection(nameof(JwtIssuerOptions)).Get<JwtIssuerOptions>();
+
+            var tokenValidationParameters = new TokenValidationParameters {
+                ValidateIssuer = true,
+                ValidIssuer = jwtAppSettingOptions.Issuer,
+
+                ValidateAudience = true,
+                ValidAudience = jwtAppSettingOptions.Audience,
+
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = ConfigureSecurityKey(jwtAppSettingOptions),
+
+                RequireExpirationTime = true,
+                ValidateLifetime = true,
+
+                ClockSkew = TimeSpan.Zero
+            };
+
+            services.AddAuthentication(options => {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options => {
+                options.RequireHttpsMetadata = false;
+                options.TokenValidationParameters = tokenValidationParameters;
+                options.Events = new JwtBearerEvents {
+                    OnMessageReceived = context => {
+                        var task = Task.Run(() => {
+                            if (context.Request.Query.TryGetValue("securityToken", out var securityToken)) {
+                                context.Token = securityToken.FirstOrDefault();
+                            }
+                        });
+
+                        return task;
+                    }
+                };
+            });
+
+            // Configure AutoMapper
+
+            //services.AddAntiforgery(options => options.HeaderName = "X-XSRF-TOKEN");
+            services.AddRouting(options => options.LowercaseUrls = true);
+
+            // Configure CORS
+            services.AddCors((options => options.AddPolicy("AllowAllOrigins",
+                builder => {
+                    builder.AllowAnyOrigin()
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .SetPreflightMaxAge(TimeSpan.FromSeconds(2250));
+                })));
+
+            services.AddMvc(o => {
+                o.Filters.AddService(typeof(UserExceptionFilterAttribute));
+                o.ModelValidatorProviders.Clear();
+
+                var policy = new AuthorizationPolicyBuilder()
+                  .RequireAuthenticatedUser()
+                  .Build();
+                o.Filters.Add(new AuthorizeFilter(policy));
+            })
+            .AddJsonOptions(options => {
+                var settings = options.SerializerSettings;
+
+                var camelCasePropertyNamesContractResolver = new CamelCasePropertyNamesContractResolver();
+
+                settings.ContractResolver = camelCasePropertyNamesContractResolver;
+                settings.Converters = new JsonConverter[] {
+                new IsoDateTimeConverter(),
+                new StringEnumConverter(true)
+              };
+            })
+            .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
+            .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<CreateUserCommandValidator>());
+            
+            // Configure Compression
+            services.ConfigureCompression();
+
+            services.ConfigureSwagger();
+
+            services.AddMemoryCache();
+
+            ApplicationContainer = services.ConfigureAutofacContainer(_configuration, b => { }, new CommonModule(), new ApiModule());
+
+            var provider = new AutofacServiceProvider(ApplicationContainer);
+
+            _logger.LogInformation("Completing: Configure Services");
+
+            return provider;
+        }
+
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IConfiguration configuration,
+          ILoggerFactory loggerFactory, IApplicationLifetime appLifetime) {
+            _logger.LogInformation("Starting: Configure");
+
+            env.ConfigureLogger(loggerFactory, configuration);
+
+            app.ConfigureJwt();
+
+            app.ConfigureAssets();
+
+            app.ConfigureSwagger();
+
+            app.ConfigureCompression();
+
+            app.UseMvc();
+
+            _logger.LogInformation("Completing: Configure");
+        }
+
+        protected virtual SecurityKey ConfigureSecurityKey(JwtIssuerOptions issuerOptions) {
+            var keyString = issuerOptions.Audience;
+            var keyBytes = Encoding.UTF8.GetBytes(keyString);
+            var signingKey = new JwtSigningKey(keyBytes);
+
+            return signingKey;
+        }
     }
-
-    protected IContainer ApplicationContainer { get; private set; }
-
-    // This method gets called by the runtime. Use this method to add services to the container.
-    public IServiceProvider ConfigureServices(IServiceCollection services) {
-      _logger.LogInformation("Starting: Configure Services");
-
-      services.ConfigureLogging();
-
-      services.AddOptions();
-
-      services.ConfigureJwt(_configuration, ConfigureSecurityKey);
-
-      services.ConfigureAutomapper(Configuration => { });
-
-      services.ConfigureApi();
-
-      services.ConfigureCompression();
-
-      services.ConfigureSwagger();
-
-      services.AddMemoryCache();
-
-      ApplicationContainer = services.ConfigureAutofacContainer(_configuration, b => { }, new CommonModule(), new ApiModule());
-
-      var provider = new AutofacServiceProvider(ApplicationContainer);
-
-      _logger.LogInformation("Completing: Configure Services");
-
-      return provider;
-    }
-
-    // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-    public void Configure(IApplicationBuilder app, IHostingEnvironment env, IConfiguration configuration,
-      ILoggerFactory loggerFactory, IApplicationLifetime appLifetime) {
-      _logger.LogInformation("Starting: Configure");
-
-      env.ConfigureLogger(loggerFactory, configuration);
-
-      app.ConfigureJwt();
-
-      app.ConfigureAssets();
-
-      app.ConfigureSwagger();
-
-      app.ConfigureCompression();
-
-      app.UseMvc();
-
-      _logger.LogInformation("Completing: Configure");
-    }
-
-    protected virtual SecurityKey ConfigureSecurityKey(JwtIssuerOptions issuerOptions) {
-      var keyString = issuerOptions.Audience;
-      var keyBytes = Encoding.UTF8.GetBytes(keyString);
-      var signingKey = new JwtSigningKey(keyBytes);
-
-      return signingKey;
-    }
-  }
 }
