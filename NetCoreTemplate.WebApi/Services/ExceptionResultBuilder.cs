@@ -1,7 +1,4 @@
 ﻿using System;
-using NetCoreTemplate.WebApi.Models.ViewModels;
-using NetCoreTemplate.Common.Models.Exceptions;
-using Autofac.Core;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;

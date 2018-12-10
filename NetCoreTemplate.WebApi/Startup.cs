@@ -121,6 +121,9 @@ namespace NetCoreTemplate.WebApi {
                   .SetPreflightMaxAge(TimeSpan.FromSeconds(2250));
           })));
 
+      services.AddDbContext<NetCoreTemplateDbContext>(options =>
+                options.UseSqlServer(_configuration.GetConnectionString("NorthwindDatabase")));
+
       services.AddMvc(o => {
         o.Filters.AddService(typeof(UserExceptionFilterAttribute));
         o.ModelValidatorProviders.Clear();

@@ -12,8 +12,6 @@ namespace NetCoreTemplate.Common {
     protected override void Load(ContainerBuilder builder) {
       builder.RegisterAssemblyTypes(ThisAssembly).AsImplementedInterfaces();
 
-      builder.RegisterType<NetCoreTemplateDbContext>().As<typeof(NetCoreTemplateDbContext)>().InstancePerLifetimeScope();
-
       builder.Register(context => {
         var configuration = context.Resolve<IConfiguration>();
         var issuerOptions = configuration.GetSection("jwtIssuerOptions").Get<JwtIssuerOptions>();
