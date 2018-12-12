@@ -1,31 +1,20 @@
 ﻿using FluentValidation.AspNetCore;
-using MediatR;
-using MediatR.Pipeline;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Cors.Internal;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using NetCoreTemplate.Application.Users.Commands.CreateUser;
-using NetCoreTemplate.Application.Infrastructure;
-using NetCoreTemplate.Application.Interfaces;
-using NetCoreTemplate.Infrastructure;
 using NetCoreTemplate.Persistence;
 using NetCoreTemplate.WebApi.Filters;
-using System.Reflection;
 using System;
-using Swashbuckle.AspNetCore.Swagger;
 using System.IO;
-using System.Collections.Generic;
 using Autofac.Extensions.DependencyInjection;
 using Autofac;
 using Microsoft.Extensions.Logging;
-//using NetCoreTemplate.WebApi.Configuration;
 using NetCoreTemplate.Common;
 using NetCoreTemplate.Common.Models.Options;
 using NetCoreTemplate.Common.Models.Security;
@@ -33,7 +22,6 @@ using System.Text;
 using Serilog.Core;
 using System.Threading.Tasks;
 using System.Linq;
-using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Newtonsoft.Json.Serialization;
@@ -43,6 +31,11 @@ using Microsoft.AspNetCore.ResponseCompression;
 using System.IO.Compression;
 using Serilog.Events;
 using Serilog;
+using NJsonSchema;
+using NSwag;
+using NSwag.AspNetCore;
+using NSwag.SwaggerGeneration.Processors.Security;
+using System.Reflection;
 
 namespace NetCoreTemplate.WebApi {
   public class Startup {
@@ -68,8 +61,8 @@ namespace NetCoreTemplate.WebApi {
 
       services.AddOptions();
 
-      // Configure Jwt
-      var jwtAppSettingOptions = _configuration.GetSection(nameof(JwtIssuerOptions)).Get<JwtIssuerOptions>();
+            #region Config Jwt
+            var jwtAppSettingOptions = _configuration.GetSection(nameof(JwtIssuerOptions)).Get<JwtIssuerOptions>();
 
       var tokenValidationParameters = new TokenValidationParameters {
         ValidateIssuer = true,
@@ -106,25 +99,29 @@ namespace NetCoreTemplate.WebApi {
           }
         };
       });
+            #endregion
 
-      // Configure AutoMapper
+            #region Config AutoMapper
+            #endregion
 
-      //services.AddAntiforgery(options => options.HeaderName = "X-XSRF-TOKEN");
-      services.AddRouting(options => options.LowercaseUrls = true);
+            //services.AddAntiforgery(options => options.HeaderName = "X-XSRF-TOKEN");
+            services.AddRouting(options => options.LowercaseUrls = true);
 
-      // Configure CORS
-      services.AddCors((options => options.AddPolicy("AllowAllOrigins",
+            #region Config CORS
+            services.AddCors((options => options.AddPolicy("AllowAllOrigins",
           builder => {
             builder.AllowAnyOrigin()
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .SetPreflightMaxAge(TimeSpan.FromSeconds(2250));
           })));
+            #endregion
 
-      services.AddDbContext<NetCoreTemplateDbContext>(options =>
+            services.AddDbContext<NetCoreTemplateDbContext>(options =>
                 options.UseSqlServer(_configuration.GetConnectionString("NorthwindDatabase")));
 
-      services.AddMvc(o => {
+            #region AddMvc
+            services.AddMvc(o => {
         o.Filters.AddService(typeof(UserExceptionFilterAttribute));
         o.ModelValidatorProviders.Clear();
 
@@ -146,42 +143,47 @@ namespace NetCoreTemplate.WebApi {
       })
       .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
       .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<CreateUserCommandValidator>());
+            #endregion
 
-      // Configure Compression
-      services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
+            #region Config Compression
+            services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
       services.AddResponseCompression(options => { options.Providers.Add<GzipCompressionProvider>(); });
+            #endregion
 
-      // Configure Swagger
-      services.AddSwaggerGen(c => {
-        c.SwaggerDoc("v1", new Info {
-          Version = "v1",
-          Title = "Net Core Template API",
-          Description = "Net Core Template API"
-        });
+            #region Config Swagger
+            //      services.AddSwaggerGen(c => {
+            //  c.SwaggerDoc("v1", new Info {
+            //    Version = "v1",
+            //    Title = "Net Core Template API",
+            //    Description = "Net Core Template API"
+            //  });
 
-        var basePath = PlatformServices.Default.Application.ApplicationBasePath;
-        var xmlPath = Path.Combine(basePath, "NetCoreTemplate.xml");
-        c.IncludeXmlComments(xmlPath);
-        c.OperationFilter<AuthorizationHeaderParameterOperationFilter>();
-        c.OperationFilter<FormFileOperationFilter>();
-      });
+            //  var basePath = PlatformServices.Default.Application.ApplicationBasePath;
+            //  var xmlPath = Path.Combine(basePath, "NetCoreTemplate.WebApi.xml");
+            //  c.IncludeXmlComments(xmlPath);
+            //  c.OperationFilter<AuthorizationHeaderParameterOperationFilter>();
+            //  c.OperationFilter<FormFileOperationFilter>();
+            //});
+            #endregion
 
-      services.AddMemoryCache();
+            services.AddMemoryCache();
 
-
-      var autofacBuilder = new ContainerBuilder();
+            #region Autofac
+            var autofacBuilder = new ContainerBuilder();
 
       autofacBuilder.Register(ctx => _configuration).As<IConfiguration>();
       autofacBuilder.RegisterModule(new CommonModule());
       autofacBuilder.RegisterModule(new ApiModule());
+            autofacBuilder.RegisterType<NetCoreTemplateDbContext>().AsSelf().InstancePerLifetimeScope();
 
       autofacBuilder.Populate(services);
 
       ApplicationContainer = autofacBuilder.Build();
 
       var provider = new AutofacServiceProvider(ApplicationContainer);
+            #endregion
 
-      _logger.LogInformation("Completing: Configure Services");
+            _logger.LogInformation("Completing: Configure Services");
 
       return provider;
     }
@@ -191,8 +193,8 @@ namespace NetCoreTemplate.WebApi {
       ILoggerFactory loggerFactory, IApplicationLifetime appLifetime) {
       _logger.LogInformation("Starting: Configure");
 
-      // Configure logging
-      var baseDir = env.ContentRootPath;
+            #region Logging
+            var baseDir = env.ContentRootPath;
       var logPath = Path.Combine(baseDir, "logs");
       if (!Directory.Exists(logPath)) {
         Directory.CreateDirectory(logPath);
@@ -227,17 +229,39 @@ namespace NetCoreTemplate.WebApi {
       loggerFactory.AddConsole(configuration.GetSection("Logging"));
       loggerFactory.AddDebug();
       loggerFactory.AddSerilog(logger);
-      
-      app.UseAuthentication();
+            #endregion
+
+            app.UseAuthentication();
       app.UseFileServer();
       app.UseStaticFiles();
       app.UseCors("AllowAllOrigins");
 
-      app.UseSwagger();
-      app.UseSwaggerUI(c => {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Net Core Template API V1");
-      });
+            //app.UseSwagger();
+            //app.UseSwaggerUI(c => {
+            //    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Net Core Template API V1");
+            //});
+            #region Swagger
+            var swaggerUiOwinSettings = new SwaggerUiSettings {
+                DefaultPropertyNameHandling = PropertyNameHandling.CamelCase,
+                Title = "NetCoreTemplate.WebApi",
+                SwaggerRoute = "/api/docs/v1/swagger.json",
+                SwaggerUiRoute = "/api/docs",
+                UseJsonEditor = true,
+                FlattenInheritanceHierarchy = true,
+                IsAspNetCore = true
+            };
 
+            swaggerUiOwinSettings.DocumentProcessors.Add(new SecurityDefinitionAppender(
+                "Authorization",
+                new .SwaggerSecurityScheme {
+                    Type = SwaggerSecuritySchemeType.ApiKey,
+                    Name = "Authorization",
+                    In = SwaggerSecurityApiKeyLocation.Header
+                }));
+
+            app.UseSwaggerUi(Assembly.GetExecutingAssembly(), swaggerUiOwinSettings);
+            #endregion
+            
       app.UseResponseCompression();
 
       app.UseMvc();

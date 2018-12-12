@@ -13,6 +13,7 @@ namespace NetCoreTemplate.WebApi {
       builder.RegisterAssemblyTypes(ThisAssembly).AsImplementedInterfaces();
       builder.RegisterType<HttpContextAccessor>().As<IHttpContextAccessor>().SingleInstance();
       builder.RegisterType<GlobalExceptionFilter>().AsSelf().InstancePerLifetimeScope();
+            builder.RegisterType<UserExceptionFilterAttribute>().AsSelf().InstancePerLifetimeScope();
 
       builder.Register(context => {
         var configurationRoot = context.Resolve<IConfiguration>();

@@ -1,31 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using FluentValidation.Results;
+using Newtonsoft.Json;
 
 namespace NetCoreTemplate.Application.Exceptions {
-  public class ValidationException : Exception {
-    public ValidationException()
-        : base("One or more validation failures have occurred.") {
-      Failures = new Dictionary<string, string[]>();
+  public class ValidationException : ApiException<List<ValidationFailure>> {
+    public ValidationException(List<ValidationFailure> validationFailures)
+        : base(HttpStatusCode.BadRequest, "One or more validation failures have occurred.", validationFailures ?? new List<ValidationFailure>()) {
+            var propertyNames = validationFailures
+                .Select(e => e.PropertyName)
+                .Distinct();
+
+            foreach (var propertyName in propertyNames) {
+                var propertyFailures = validationFailures
+                    .Where(e => e.PropertyName == propertyName)
+                    .Select(e => e.ErrorMessage)
+                    .ToArray();
+
+                Failures.Add(propertyName, propertyFailures);
+            }
+        }
+
+        public override string GetContent() {
+            return JsonConvert.SerializeObject(Content);
+        }
+
+        public IDictionary<string, string[]> Failures { get; }
     }
-
-    public ValidationException(List<ValidationFailure> failures)
-        : this() {
-      var propertyNames = failures
-          .Select(e => e.PropertyName)
-          .Distinct();
-
-      foreach (var propertyName in propertyNames) {
-        var propertyFailures = failures
-            .Where(e => e.PropertyName == propertyName)
-            .Select(e => e.ErrorMessage)
-            .ToArray();
-
-        Failures.Add(propertyName, propertyFailures);
-      }
-    }
-
-    public IDictionary<string, string[]> Failures { get; }
-  }
 }

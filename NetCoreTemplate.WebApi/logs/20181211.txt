@@ -1,0 +1,11 @@
+2018-12-11 14:19:04.877 +10:00 [Information] Logging has started
+2018-12-11 14:24:01.959 +10:00 [Information] Logging has started
+2018-12-11 14:35:46.761 +10:00 [Information] Logging has started
+2018-12-11 14:36:35.006 +10:00 [Information] Logging has started
+2018-12-11 14:40:53.773 +10:00 [Information] Logging has started
+2018-12-11 14:57:03.151 +10:00 [Information] Logging has started
+2018-12-11 15:01:44.102 +10:00 [Information] Logging has started
+2018-12-11 15:04:50.685 +10:00 [Information] Logging has started
+2018-12-11 15:36:36.143 +10:00 [Information] Logging has started
+2018-12-11 15:42:24.128 +10:00 [Information] Logging has started
+2018-12-11 15:43:43.150 +10:00 [Information] Logging has started

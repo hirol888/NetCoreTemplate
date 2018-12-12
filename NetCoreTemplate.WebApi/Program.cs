@@ -6,6 +6,7 @@ using System.Reflection;
 using Serilog;
 using Serilog.Events;
 using Microsoft.AspNetCore;
+using System.Net;
 
 namespace NetCoreTemplate.WebApi {
   public class Program {

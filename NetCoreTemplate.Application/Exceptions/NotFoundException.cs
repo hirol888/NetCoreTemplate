@@ -1,9 +1,13 @@
 ﻿using System;
+using System.Net;
 
 namespace NetCoreTemplate.Application.Exceptions {
-  public class NotFoundException : Exception {
+  public class NotFoundException : ApiException {
     public NotFoundException(string name, object key)
-        : base($"Entity \"{name}\" ({key}) was not found.") {
+        : base(HttpStatusCode.NotFound, $"Entity \"{name}\" ({key}) was not found.") { }
+
+        public override string GetContent() {
+            return null;
+        }
     }
-  }
 }
