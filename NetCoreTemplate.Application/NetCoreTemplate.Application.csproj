@@ -1,13 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Dapper" Version="1.50.5" />
-    <PackageReference Include="FluentValidation" Version="8.0.101" />
-    <PackageReference Include="MediatR" Version="5.1.0" />
+    <PackageReference Include="FluentValidation" Version="8.1.1" />
+    <PackageReference Include="MediatR" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>

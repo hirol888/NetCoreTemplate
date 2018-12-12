@@ -6,18 +6,18 @@ namespace NetCoreTemplate.WebApi.Filters {
   public class GlobalExceptionFilter : IExceptionFilter, IDisposable {
     private readonly IExceptionResultBuilder _exceptionResultBuilder;
 
-        public GlobalExceptionFilter(IExceptionResultBuilder exceptionResultBuilder) {
-            _exceptionResultBuilder = exceptionResultBuilder;
-        }
+    public GlobalExceptionFilter(IExceptionResultBuilder exceptionResultBuilder) {
+      _exceptionResultBuilder = exceptionResultBuilder;
+    }
 
-        public void Dispose() { }
+    public void Dispose() { }
 
-        public void OnException(ExceptionContext context) {
-            var exception = context.Exception;
+    public void OnException(ExceptionContext context) {
+      var exception = context.Exception;
 
-            var result = _exceptionResultBuilder.Build(exception);
+      var result = _exceptionResultBuilder.Build(exception);
 
-            context.Result = result;
-        }
+      context.Result = result;
+    }
   }
 }
