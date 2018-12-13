@@ -34,6 +34,8 @@ using Serilog;
 using Microsoft.Extensions.PlatformAbstractions;
 using Swashbuckle.AspNetCore.Swagger;
 using Microsoft.Extensions.Logging.Debug;
+using AutoMapper;
+using Microsoft.Extensions.DependencyModel;
 
 namespace NetCoreTemplate.WebApi {
   public class Startup {
@@ -98,9 +100,8 @@ namespace NetCoreTemplate.WebApi {
         };
       });
       #endregion
-
-      #region Config AutoMapper
-      #endregion
+      
+      services.AddAutoMapper();
 
       //services.AddAntiforgery(options => options.HeaderName = "X-XSRF-TOKEN");
       services.AddRouting(options => options.LowercaseUrls = true);
@@ -116,7 +117,7 @@ namespace NetCoreTemplate.WebApi {
       #endregion
 
       services.AddDbContext<NetCoreTemplateDbContext>(options =>
-          options.UseSqlServer(_configuration.GetConnectionString("NorthwindDatabase")));
+          options.UseSqlServer(_configuration.GetConnectionString("NetCoreTemplateDatabase")));
 
       #region AddMvc
       services.AddMvc(o => {
@@ -128,19 +129,19 @@ namespace NetCoreTemplate.WebApi {
           .Build();
         o.Filters.Add(new AuthorizeFilter(policy));
       })
-.AddJsonOptions(options => {
-  var settings = options.SerializerSettings;
+      .AddJsonOptions(options => {
+        var settings = options.SerializerSettings;
 
-  var camelCasePropertyNamesContractResolver = new CamelCasePropertyNamesContractResolver();
+        var camelCasePropertyNamesContractResolver = new CamelCasePropertyNamesContractResolver();
 
-  settings.ContractResolver = camelCasePropertyNamesContractResolver;
-  settings.Converters = new JsonConverter[] {
-                new IsoDateTimeConverter(),
-                new StringEnumConverter(new DefaultNamingStrategy(), true)
-  };
-})
-.SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
-.AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<CreateUserCommandValidator>());
+        settings.ContractResolver = camelCasePropertyNamesContractResolver;
+        settings.Converters = new JsonConverter[] {
+                      new IsoDateTimeConverter(),
+                      new StringEnumConverter(new DefaultNamingStrategy(), true)
+        };
+      })
+      .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
+      .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<CreateUserCommandValidator>());
       #endregion
 
       #region Config Compression
