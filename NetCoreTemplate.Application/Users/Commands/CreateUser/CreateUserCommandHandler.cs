@@ -24,7 +24,7 @@ namespace NetCoreTemplate.Application.Users.Commands.CreateUser {
         Password = request.Password
       };
 
-      _context.Users.Add(entity);
+      _context.User.Add(entity);
 
       await _context.SaveChangesAsync(cancellationToken);
 

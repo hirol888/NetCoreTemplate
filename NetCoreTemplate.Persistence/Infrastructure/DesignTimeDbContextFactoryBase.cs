@@ -11,7 +11,7 @@ namespace NetCoreTemplate.Persistence.Infrastructure {
     private const string AspNetCoreEnvironment = "ASPNETCORE_ENVIRONMENT";
 
     public TContext CreateDbContext(string[] args) {
-      var basePath = Directory.GetCurrentDirectory() + string.Format("{0}..{0}Northwind.WebApi", Path.DirectorySeparatorChar);
+      var basePath = Directory.GetCurrentDirectory() + string.Format("{0}..{0}NetCoreTemplate.WebApi", Path.DirectorySeparatorChar);
       return Create(basePath, Environment.GetEnvironmentVariable(AspNetCoreEnvironment));
     }
 

@@ -2,11 +2,13 @@
 using System.Linq;
 using System.Net;
 using AutoMapper;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using NetCoreTemplate.Application.Exceptions;
 using NetCoreTemplate.WebApi.Services;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace NetCoreTemplate.WebApi.Controllers {
   [ProducesResponseType(typeof(void), (int)HttpStatusCode.NotFound)]
@@ -21,6 +23,9 @@ namespace NetCoreTemplate.WebApi.Controllers {
 
     protected IMapper Mapper { get; }
     protected IServiceInvoker ServiceInvoker { get; }
+    private IMediator _mediator;
+
+    protected IMediator Mediator => _mediator ?? (_mediator = HttpContext.RequestServices.GetService<IMediator>());
 
     public override void OnActionExecuting(ActionExecutingContext context) {
       if (!context.ModelState.IsValid)

@@ -1,0 +1,4 @@
+2018-12-15 00:01:36.341 +10:00 [Information] Logging has started
+2018-12-15 00:03:04.454 +10:00 [Information] Logging has started
+2018-12-15 00:04:10.944 +10:00 [Information] Logging has started
+2018-12-15 00:05:50.078 +10:00 [Information] Logging has started

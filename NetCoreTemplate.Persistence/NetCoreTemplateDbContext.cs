@@ -6,10 +6,10 @@ namespace NetCoreTemplate.Persistence {
   public class NetCoreTemplateDbContext : DbContext {
     public NetCoreTemplateDbContext(DbContextOptions<NetCoreTemplateDbContext> options) : base(options) {}
 
-    public DbSet<User> Users { get; set; }
+    public DbSet<User> User { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
-      modelBuilder.ApplyAllConfigurations();
+      modelBuilder.ApplyConfigurationsFromAssembly(typeof(NetCoreTemplateDbContext).Assembly);
     }
   }
 }

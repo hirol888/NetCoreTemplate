@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NetCoreTemplate.Application.Users.Queries.GetUserDetail;
+using NetCoreTemplate.Application.Users.Queries.GetUserList;
 using NetCoreTemplate.WebApi.Services;
 
 namespace NetCoreTemplate.WebApi.Controllers {
@@ -15,14 +17,15 @@ namespace NetCoreTemplate.WebApi.Controllers {
     // GET api/values
     [HttpGet]
     [AllowAnonymous]
-    public ActionResult<IEnumerable<string>> Get() {
-      return new string[] { "value1", "value2" };
+    public async Task<ActionResult<UsersListViewModel>> Get() {
+      return Ok(await Mediator.Send(new GetUsersListQuery()));
     }
 
     // GET api/values/5
     [HttpGet("{id}")]
-    public ActionResult<string> Get(int id) {
-      return "value";
+    [AllowAnonymous]
+    public async Task<ActionResult<UserDetailModel>> Get(int id) {
+      return Ok(await Mediator.Send(new GetUserDetailQuery { Id = id }));
     }
 
     // POST api/values

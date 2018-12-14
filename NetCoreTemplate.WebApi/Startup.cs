@@ -33,9 +33,12 @@ using Serilog.Events;
 using Serilog;
 using Microsoft.Extensions.PlatformAbstractions;
 using Swashbuckle.AspNetCore.Swagger;
-using Microsoft.Extensions.Logging.Debug;
 using AutoMapper;
-using Microsoft.Extensions.DependencyModel;
+using MediatR;
+using MediatR.Pipeline;
+using NetCoreTemplate.Application.Infrastructure;
+using System.Reflection;
+using NetCoreTemplate.Application.Users.Queries.GetUserList;
 
 namespace NetCoreTemplate.WebApi {
   public class Startup {
@@ -144,6 +147,8 @@ namespace NetCoreTemplate.WebApi {
       .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<CreateUserCommandValidator>());
       #endregion
 
+      services.AddMediatR(typeof(GetUsersListQueryHandler).GetTypeInfo().Assembly);
+
       #region Config Compression
       services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
       services.AddResponseCompression(options => { options.Providers.Add<GzipCompressionProvider>(); });
@@ -173,7 +178,13 @@ namespace NetCoreTemplate.WebApi {
       autofacBuilder.Register(ctx => _configuration).As<IConfiguration>();
       autofacBuilder.RegisterModule(new CommonModule());
       autofacBuilder.RegisterModule(new ApiModule());
-      autofacBuilder.RegisterType<NetCoreTemplateDbContext>().AsSelf().InstancePerLifetimeScope();
+      //autofacBuilder.RegisterType<NetCoreTemplateDbContext>().AsSelf().InstancePerLifetimeScope();
+      //autofacBuilder.RegisterAssemblyTypes(AppDomain.CurrentDomain.GetAssemblies()).AsClosedTypesOf(typeof(IPipelineBehavior<,>));
+      autofacBuilder.RegisterGeneric(typeof(RequestPreProcessorBehavior<,>)).As(typeof(IPipelineBehavior<,>));
+      autofacBuilder.RegisterGeneric(typeof(RequestPerformanceBehaviour<,>)).As(typeof(IPipelineBehavior<,>));
+      autofacBuilder.RegisterGeneric(typeof(RequestValidationBehaviour<,>)).As(typeof(IPipelineBehavior<,>));
+      //autofacBuilder.RegisterAssemblyTypes(AppDomain.CurrentDomain.GetAssemblies()).AsClosedTypesOf(typeof(IRequestHandler<,>));
+      //autofacBuilder.RegisterAssemblyTypes(typeof(IMediator).GetTypeInfo().Assembly).AsImplementedInterfaces();
 
       autofacBuilder.Populate(services);
 
