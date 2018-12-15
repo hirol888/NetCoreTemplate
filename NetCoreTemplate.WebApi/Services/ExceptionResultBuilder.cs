@@ -2,15 +2,15 @@
 using Autofac.Core;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+using Serilog;
 using NetCoreTemplate.Application.Exceptions;
 
 namespace NetCoreTemplate.WebApi.Services {
   public class ExceptionResultBuilder : IExceptionResultBuilder {
     private readonly IHostingEnvironment _hostingEnvironment;
-    private readonly ILogger<ExceptionResultBuilder> _logger;
+    private readonly ILogger _logger;
 
-    public ExceptionResultBuilder(IHostingEnvironment hostingEnvironment, ILogger<ExceptionResultBuilder> logger) {
+    public ExceptionResultBuilder(IHostingEnvironment hostingEnvironment, ILogger logger) {
       _hostingEnvironment = hostingEnvironment;
       _logger = logger;
     }
@@ -61,9 +61,9 @@ namespace NetCoreTemplate.WebApi.Services {
             var objectResult = new ObjectResult(apiError) {
                 StatusCode = statusCode
             };
-            var eventId = new EventId(statusCode);
+            var eventId = new Microsoft.Extensions.Logging.EventId(statusCode);
 
-            _logger.LogError(eventId, exception, message);
+            _logger.Error($"{eventId.Name}, {exception}, {message}");
 
             return objectResult;
         }

@@ -2,14 +2,14 @@
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace NetCoreTemplate.Application.Infrastructure {
   public class RequestPerformanceBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> {
     private readonly Stopwatch _timer;
-    private readonly ILogger<TRequest> _logger;
+    private readonly ILogger _logger;
 
-    public RequestPerformanceBehaviour(ILogger<TRequest> logger) {
+    public RequestPerformanceBehaviour(ILogger logger) {
       _timer = new Stopwatch();
       _logger = logger;
     }
@@ -24,7 +24,7 @@ namespace NetCoreTemplate.Application.Infrastructure {
       if (_timer.ElapsedMilliseconds > 500) {
         var name = typeof(TRequest).Name;
 
-        _logger.LogWarning($"NetCoreTemplate Long Running Request: {name} ({_timer.ElapsedMilliseconds} milliseconds) @{request}");
+        _logger.Warning($"NetCoreTemplate Long Running Request: {name} ({_timer.ElapsedMilliseconds} milliseconds) @{request}");
       }
 
       return response;

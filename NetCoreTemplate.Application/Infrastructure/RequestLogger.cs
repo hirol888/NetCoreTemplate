@@ -1,20 +1,21 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using MediatR.Pipeline;
-using Microsoft.Extensions.Logging;
+using Serilog;
+using Serilog.Events;
 
 namespace NetCoreTemplate.Application.Infrastructure {
   public class RequestLogger<TRequest> : IRequestPreProcessor<TRequest> {
     private readonly ILogger _logger;
 
-    public RequestLogger(ILogger<TRequest> logger) {
+    public RequestLogger(ILogger logger) {
       _logger = logger;
     }
 
     public Task Process(TRequest request, CancellationToken cancellationToken) {
       var name = typeof(TRequest).Name;
 
-      _logger.LogInformation($"NetCoreTemplate Request: {name} @{request}");
+      _logger.Write(LogEventLevel.Information, $"NetCoreTemplate Request: {name} @{request}");
 
       return Task.CompletedTask;
     }

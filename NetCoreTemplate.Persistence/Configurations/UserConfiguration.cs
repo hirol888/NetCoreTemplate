@@ -8,7 +8,7 @@ namespace NetCoreTemplate.Persistence.Configurations {
       builder.HasKey(e => e.Id);
 
       builder.Property(e => e.Id)
-        .ValueGeneratedNever();
+        .ValueGeneratedOnAdd();
 
       builder.Property(e => e.FirstName).HasMaxLength(50);
     }

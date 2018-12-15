@@ -69,7 +69,7 @@ namespace NetCoreTemplate.WebApi {
         })
         .UseConfiguration(configuration)
         .UseStartup<Startup>()
-        .UseSerilog(Log.Logger)
+        .UseSerilog()
         .Build();
     }
 

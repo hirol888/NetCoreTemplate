@@ -32,3 +32,22 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
 2018-12-15 19:20:43.645 +10:00 [Information] Logging has started
 2018-12-15 19:23:18.933 +10:00 [Information] Logging has started
 2018-12-15 19:28:59.841 +10:00 [Information] Logging has started
+2018-12-15 19:36:25.436 +10:00 [Information] Logging has started
+2018-12-15 19:44:31.971 +10:00 [Information] Logging has started
+2018-12-15 21:21:02.179 +10:00 [Information] Logging has started
+2018-12-15 22:08:23.139 +10:00 [Information] Logging has started
+2018-12-15 22:14:50.915 +10:00 [Information] Logging has started
+2018-12-15 22:22:19.940 +10:00 [Information] Logging has started
+2018-12-15 22:29:04.629 +10:00 [Information] Logging has started
+2018-12-15 22:33:23.597 +10:00 [Information] Logging has started
+2018-12-15 22:40:17.546 +10:00 [Information] Logging has started
+2018-12-15 22:44:50.151 +10:00 [Information] Logging has started
+2018-12-15 22:46:49.517 +10:00 [Error] , NetCoreTemplate.Application.Exceptions.ApiException`1[System.Collections.Generic.IDictionary`2[System.String,System.String[]]]: Invalid request
+   at NetCoreTemplate.WebApi.Controllers.ApiBaseController.OnActionExecuting(ActionExecutingContext context) in Z:\Source\NetCoreTemplate\NetCoreTemplate.WebApi\Controllers\ApiBaseController.cs:line 44
+   at Microsoft.AspNetCore.Mvc.Controller.OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+   at Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker.InvokeInnerFilterAsync()
+   at Microsoft.AspNetCore.Mvc.Internal.ResourceInvoker.InvokeNextExceptionFilterAsync(), Invalid request
+2018-12-15 22:50:31.230 +10:00 [Information] Logging has started
+2018-12-15 22:51:02.444 +10:00 [Information] NetCoreTemplate Request: GetUsersListQuery @NetCoreTemplate.Application.Users.Queries.GetUserList.GetUsersListQuery
+2018-12-15 23:23:25.915 +10:00 [Information] Logging has started
+2018-12-15 23:23:45.494 +10:00 [Information] NetCoreTemplate Request: GetUsersListQuery @NetCoreTemplate.Application.Users.Queries.GetUserList.GetUsersListQuery
