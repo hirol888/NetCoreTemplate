@@ -40,12 +40,15 @@ using NetCoreTemplate.Application.Infrastructure;
 using System.Reflection;
 using NetCoreTemplate.Application.Users.Queries.GetUserList;
 
-namespace NetCoreTemplate.WebApi {
-  public class Startup {
+namespace NetCoreTemplate.WebApi
+{
+  public class Startup
+  {
     private readonly IConfiguration _configuration;
     private readonly ILogger<Startup> _logger;
 
-    public Startup(IConfiguration configuration, ILogger<Startup> logger, IHostingEnvironment hostingEnvironment) {
+    public Startup(IConfiguration configuration, ILogger<Startup> logger, IHostingEnvironment hostingEnvironment)
+    {
       _configuration = configuration;
       _logger = logger;
 
@@ -55,7 +58,8 @@ namespace NetCoreTemplate.WebApi {
     protected IContainer ApplicationContainer { get; private set; }
 
     // This method gets called by the runtime. Use this method to add services to the container.
-    public IServiceProvider ConfigureServices(IServiceCollection services) {
+    public IServiceProvider ConfigureServices(IServiceCollection services)
+    {
       _logger.LogInformation("Starting: Configure Services");
 
       // Configure Logging
@@ -67,7 +71,8 @@ namespace NetCoreTemplate.WebApi {
       #region Config Jwt
       var jwtAppSettingOptions = _configuration.GetSection(nameof(JwtIssuerOptions)).Get<JwtIssuerOptions>();
 
-      var tokenValidationParameters = new TokenValidationParameters {
+      var tokenValidationParameters = new TokenValidationParameters
+      {
         ValidateIssuer = true,
         ValidIssuer = jwtAppSettingOptions.Issuer,
 
@@ -83,17 +88,23 @@ namespace NetCoreTemplate.WebApi {
         ClockSkew = TimeSpan.Zero
       };
 
-      services.AddAuthentication(options => {
+      services.AddAuthentication(options =>
+      {
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
       })
-      .AddJwtBearer(options => {
+      .AddJwtBearer(options =>
+      {
         options.RequireHttpsMetadata = false;
         options.TokenValidationParameters = tokenValidationParameters;
-        options.Events = new JwtBearerEvents {
-          OnMessageReceived = context => {
-            var task = Task.Run(() => {
-              if (context.Request.Query.TryGetValue("securityToken", out var securityToken)) {
+        options.Events = new JwtBearerEvents
+        {
+          OnMessageReceived = context =>
+          {
+            var task = Task.Run(() =>
+            {
+              if (context.Request.Query.TryGetValue("securityToken", out var securityToken))
+              {
                 context.Token = securityToken.FirstOrDefault();
               }
             });
@@ -103,7 +114,7 @@ namespace NetCoreTemplate.WebApi {
         };
       });
       #endregion
-      
+
       services.AddAutoMapper();
 
       //services.AddAntiforgery(options => options.HeaderName = "X-XSRF-TOKEN");
@@ -111,7 +122,8 @@ namespace NetCoreTemplate.WebApi {
 
       #region Config CORS
       services.AddCors((options => options.AddPolicy("AllowAllOrigins",
-    builder => {
+    builder =>
+    {
       builder.AllowAnyOrigin()
             .AllowAnyHeader()
             .AllowAnyMethod()
@@ -123,8 +135,8 @@ namespace NetCoreTemplate.WebApi {
           options.UseSqlServer(_configuration.GetConnectionString("NetCoreTemplateDatabase")));
 
       #region AddMvc
-      services.AddMvc(o => {
-        o.Filters.AddService(typeof(UserExceptionFilterAttribute));
+      services.AddMvc(o =>
+      {
         o.ModelValidatorProviders.Clear();
 
         var policy = new AuthorizationPolicyBuilder()
@@ -132,7 +144,8 @@ namespace NetCoreTemplate.WebApi {
           .Build();
         o.Filters.Add(new AuthorizeFilter(policy));
       })
-      .AddJsonOptions(options => {
+      .AddJsonOptions(options =>
+      {
         var settings = options.SerializerSettings;
 
         var camelCasePropertyNamesContractResolver = new CamelCasePropertyNamesContractResolver();
@@ -147,7 +160,8 @@ namespace NetCoreTemplate.WebApi {
       .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<CreateUserCommandValidator>());
       #endregion
 
-      services.AddMediatR(typeof(GetUsersListQueryHandler).GetTypeInfo().Assembly);
+      //services.AddMediatR(typeof(GetUsersListQueryHandler).GetTypeInfo().Assembly);
+      //services.AddMediatR(typeof(CreateUserCommandHandler).GetTypeInfo().Assembly);
 
       #region Config Compression
       services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
@@ -155,8 +169,10 @@ namespace NetCoreTemplate.WebApi {
       #endregion
 
       #region Config Swagger
-      services.AddSwaggerGen(c => {
-        c.SwaggerDoc("v1", new Info {
+      services.AddSwaggerGen(c =>
+      {
+        c.SwaggerDoc("v1", new Info
+        {
           Version = "v1",
           Title = "Net Core Template API",
           Description = "Net Core Template API"
@@ -178,13 +194,6 @@ namespace NetCoreTemplate.WebApi {
       autofacBuilder.Register(ctx => _configuration).As<IConfiguration>();
       autofacBuilder.RegisterModule(new CommonModule());
       autofacBuilder.RegisterModule(new ApiModule());
-      //autofacBuilder.RegisterType<NetCoreTemplateDbContext>().AsSelf().InstancePerLifetimeScope();
-      //autofacBuilder.RegisterAssemblyTypes(AppDomain.CurrentDomain.GetAssemblies()).AsClosedTypesOf(typeof(IPipelineBehavior<,>));
-      autofacBuilder.RegisterGeneric(typeof(RequestPreProcessorBehavior<,>)).As(typeof(IPipelineBehavior<,>));
-      autofacBuilder.RegisterGeneric(typeof(RequestPerformanceBehaviour<,>)).As(typeof(IPipelineBehavior<,>));
-      autofacBuilder.RegisterGeneric(typeof(RequestValidationBehaviour<,>)).As(typeof(IPipelineBehavior<,>));
-      //autofacBuilder.RegisterAssemblyTypes(AppDomain.CurrentDomain.GetAssemblies()).AsClosedTypesOf(typeof(IRequestHandler<,>));
-      //autofacBuilder.RegisterAssemblyTypes(typeof(IMediator).GetTypeInfo().Assembly).AsImplementedInterfaces();
 
       autofacBuilder.Populate(services);
 
@@ -200,19 +209,22 @@ namespace NetCoreTemplate.WebApi {
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     public void Configure(IApplicationBuilder app, IHostingEnvironment env, IConfiguration configuration,
-      ILoggerFactory loggerFactory, IApplicationLifetime appLifetime) {
+      ILoggerFactory loggerFactory, IApplicationLifetime appLifetime)
+    {
       _logger.LogInformation("Starting: Configure");
 
       #region Logging
       var baseDir = env.ContentRootPath;
       var logPath = Path.Combine(baseDir, "logs");
-      if (!Directory.Exists(logPath)) {
+      if (!Directory.Exists(logPath))
+      {
         Directory.CreateDirectory(logPath);
       }
 
       LogEventLevel logLevel;
 
-      if (!Enum.TryParse(configuration["logging:logLevel:system"], true, out logLevel)) {
+      if (!Enum.TryParse(configuration["logging:logLevel:system"], true, out logLevel))
+      {
         logLevel = LogEventLevel.Verbose;
       }
 
@@ -247,7 +259,8 @@ namespace NetCoreTemplate.WebApi {
       app.UseCors("AllowAllOrigins");
 
       app.UseSwagger();
-      app.UseSwaggerUI(c => {
+      app.UseSwaggerUI(c =>
+      {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Net Core Template API V1");
       });
 
@@ -258,7 +271,8 @@ namespace NetCoreTemplate.WebApi {
       _logger.LogInformation("Completing: Configure");
     }
 
-    protected virtual SecurityKey ConfigureSecurityKey(JwtIssuerOptions issuerOptions) {
+    protected virtual SecurityKey ConfigureSecurityKey(JwtIssuerOptions issuerOptions)
+    {
       var keyString = issuerOptions.Audience;
       var keyBytes = Encoding.UTF8.GetBytes(keyString);
       var signingKey = new JwtSigningKey(keyBytes);

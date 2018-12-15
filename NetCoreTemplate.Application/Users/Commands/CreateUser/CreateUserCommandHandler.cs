@@ -8,20 +8,23 @@ using NetCoreTemplate.Persistence;
 namespace NetCoreTemplate.Application.Users.Commands.CreateUser {
   public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Unit> {
     private readonly NetCoreTemplateDbContext _context;
-    private readonly INotificationService _notificationService;
 
-    public CreateUserCommandHandler(
-      NetCoreTemplateDbContext context,
-      INotificationService notificationService
-      ) {
+    public CreateUserCommandHandler(NetCoreTemplateDbContext context) {
       _context = context;
-      _notificationService = notificationService;
     }
 
     public async Task<Unit> Handle(CreateUserCommand request, CancellationToken cancellationToken) {
       var entity = new User {
-        Id = request.Id,
-        Password = request.Password
+        Password = request.Password,
+        Email = request.Email,
+        Active = request.Active,
+        Deleted = request.Deleted,
+        LastIpAddress = request.LastIpAddress,
+        CreateAtUtc = request.CreateAtUtc,
+        LastLoginDateUtc = request.LastLoginDateUtc,
+        FirstName = request.FirstName,
+        LastName = request.LastName,
+        Mobile = request.Mobile
       };
 
       _context.User.Add(entity);

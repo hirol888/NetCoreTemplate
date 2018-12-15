@@ -6,14 +6,28 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using MediatR;
+using MediatR.Pipeline;
+using NetCoreTemplate.Application.Users.Commands.CreateUser;
+using System.Reflection;
 
 namespace NetCoreTemplate.WebApi {
-  public class ApiModule : Module {
+  public class ApiModule : Autofac.Module {
     protected override void Load(ContainerBuilder builder) {
       builder.RegisterAssemblyTypes(ThisAssembly).AsImplementedInterfaces();
       builder.RegisterType<HttpContextAccessor>().As<IHttpContextAccessor>().SingleInstance();
       builder.RegisterType<GlobalExceptionFilter>().AsSelf().InstancePerLifetimeScope();
-            builder.RegisterType<UserExceptionFilterAttribute>().AsSelf().InstancePerLifetimeScope();
+
+      builder.RegisterType<Mediator>().As<IMediator>().InstancePerLifetimeScope();
+      builder.Register<ServiceFactory>(ctx => {
+        var c = ctx.Resolve<IComponentContext>();
+        return t => {
+          object o;
+          return c.TryResolve(t, out o) ? o : null;
+        };
+      });
+      builder.RegisterAssemblyTypes(typeof(RequestPreProcessorBehavior<,>).GetTypeInfo().Assembly).AsClosedTypesOf(typeof(IPipelineBehavior<,>)).InstancePerLifetimeScope();
+      builder.RegisterAssemblyTypes(typeof(CreateUserCommandHandler).GetTypeInfo().Assembly).AsClosedTypesOf(typeof(IRequestHandler<,>)).InstancePerDependency();
 
       builder.Register(context => {
         var configurationRoot = context.Resolve<IConfiguration>();
