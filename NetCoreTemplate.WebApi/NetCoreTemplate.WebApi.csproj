@@ -50,4 +50,8 @@
     <ProjectReference Include="..\NetCoreTemplate.Persistence\NetCoreTemplate.Persistence.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
+  </ItemGroup>
+
 </Project>

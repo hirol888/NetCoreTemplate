@@ -1,6 +1,7 @@
 ﻿using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -14,12 +15,9 @@ using System;
 using System.IO;
 using Autofac.Extensions.DependencyInjection;
 using Autofac;
-using Microsoft.Extensions.Logging;
 using NetCoreTemplate.Common;
-using NetCoreTemplate.Common.Models.Options;
-using NetCoreTemplate.Common.Models.Security;
+using NetCoreTemplate.Common.Models;
 using System.Text;
-using Serilog.Core;
 using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.AspNetCore.Authorization;
@@ -29,17 +27,13 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Microsoft.AspNetCore.ResponseCompression;
 using System.IO.Compression;
-using Serilog.Events;
 using Serilog;
 using Microsoft.Extensions.PlatformAbstractions;
 using Swashbuckle.AspNetCore.Swagger;
 using AutoMapper;
-using MediatR;
-using MediatR.Pipeline;
-using NetCoreTemplate.Application.Infrastructure;
-using System.Reflection;
-using NetCoreTemplate.Application.Users.Queries.GetUserList;
 using AutofacSerilogIntegration;
+using NetCoreTemplate.Infrastructure.Auth;
+using NetCoreTemplate.Infrastructure.Identity;
 
 namespace NetCoreTemplate.WebApi {
   public class Startup {
@@ -60,21 +54,31 @@ namespace NetCoreTemplate.WebApi {
       services.AddOptions();
 
       #region Config Jwt
-      var jwtAppSettingOptions = _configuration.GetSection(nameof(JwtIssuerOptions)).Get<JwtIssuerOptions>();
+      var authSettings = _configuration.GetSection(nameof(AuthSettings));
+      services.Configure<AuthSettings>(authSettings);
+
+      var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(authSettings[nameof(AuthSettings.SecretKey)]));
+
+      var jwtAppSettingsOptions = _configuration.GetSection(nameof(JwtIssuerOptions));
+
+      services.Configure<JwtIssuerOptions>(options => {
+        options.Issuer = jwtAppSettingsOptions[nameof(JwtIssuerOptions.Issuer)];
+        options.Audience = jwtAppSettingsOptions[nameof(JwtIssuerOptions.Audience)];
+        options.SigningCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
+      });
 
       var tokenValidationParameters = new TokenValidationParameters {
         ValidateIssuer = true,
-        ValidIssuer = jwtAppSettingOptions.Issuer,
+        ValidIssuer = jwtAppSettingsOptions[nameof(JwtIssuerOptions.Issuer)],
 
         ValidateAudience = true,
-        ValidAudience = jwtAppSettingOptions.Audience,
+        ValidAudience = jwtAppSettingsOptions[nameof(JwtIssuerOptions.Audience)],
 
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = ConfigureSecurityKey(jwtAppSettingOptions),
+        IssuerSigningKey = signingKey,
 
-        RequireExpirationTime = true,
+        RequireExpirationTime = false,
         ValidateLifetime = true,
-
         ClockSkew = TimeSpan.Zero
       };
 
@@ -82,21 +86,39 @@ namespace NetCoreTemplate.WebApi {
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
       })
-      .AddJwtBearer(options => {
-        options.RequireHttpsMetadata = false;
-        options.TokenValidationParameters = tokenValidationParameters;
-        options.Events = new JwtBearerEvents {
-          OnMessageReceived = context => {
-            var task = Task.Run(() => {
-              if (context.Request.Query.TryGetValue("securityToken", out var securityToken)) {
-                context.Token = securityToken.FirstOrDefault();
-              }
-            });
+      .AddJwtBearer(configureOptions => {
+        configureOptions.ClaimsIssuer = jwtAppSettingsOptions[nameof(JwtIssuerOptions.Issuer)];
+        configureOptions.TokenValidationParameters = tokenValidationParameters;
+        configureOptions.SaveToken = true;
 
-            return task;
+        configureOptions.Events = new JwtBearerEvents {
+          OnAuthenticationFailed = context => {
+            if (context.Exception.GetType() == typeof(SecurityTokenExpiredException)) {
+              context.Response.Headers.Add("Token-Expired", "true");
+            }
+            return Task.CompletedTask;
           }
         };
       });
+      #endregion
+
+      // User claim policy
+      services.AddAuthorization(options => {
+        options.AddPolicy("ApiUser", policy => policy.RequireClaim(Constants.Strings.JwtClaimIdentifiers.Rol,
+          Constants.Strings.JwtClaims.ApiAccess));
+      });
+
+      #region Add identity
+      var identityBuilder = services.AddIdentityCore<AppUser>(o => {
+        o.Password.RequireDigit = false;
+        o.Password.RequireLowercase = false;
+        o.Password.RequireUppercase = false;
+        o.Password.RequireNonAlphanumeric = false;
+        o.Password.RequiredLength = 6;
+      });
+
+      identityBuilder = new IdentityBuilder(identityBuilder.UserType, typeof(IdentityRole), identityBuilder.Services);
+      identityBuilder.AddEntityFrameworkStores<NetCoreTemplateDbContext>().AddDefaultTokenProviders();
       #endregion
 
       services.AddAutoMapper();
@@ -106,12 +128,12 @@ namespace NetCoreTemplate.WebApi {
 
       #region Config CORS
       services.AddCors((options => options.AddPolicy("AllowAllOrigins",
-    builder => {
-      builder.AllowAnyOrigin()
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .SetPreflightMaxAge(TimeSpan.FromSeconds(2250));
-    })));
+        builder => {
+          builder.AllowAnyOrigin()
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .SetPreflightMaxAge(TimeSpan.FromSeconds(2250));
+        })));
       #endregion
 
       services.AddDbContext<NetCoreTemplateDbContext>(options =>
@@ -141,9 +163,6 @@ namespace NetCoreTemplate.WebApi {
       .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
       .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<CreateUserCommandValidator>());
       #endregion
-
-      //services.AddMediatR(typeof(GetUsersListQueryHandler).GetTypeInfo().Assembly);
-      //services.AddMediatR(typeof(CreateUserCommandHandler).GetTypeInfo().Assembly);
 
       #region Config Compression
       services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
@@ -191,7 +210,7 @@ namespace NetCoreTemplate.WebApi {
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     public void Configure(IApplicationBuilder app, IHostingEnvironment env, IConfiguration configuration, IApplicationLifetime appLifetime) {
       Log.Information("Starting: Configure");
-      
+
 
       app.UseAuthentication();
       app.UseFileServer();
@@ -208,14 +227,6 @@ namespace NetCoreTemplate.WebApi {
       app.UseMvc();
 
       Log.Information("Completing: Configure");
-    }
-
-    protected virtual SecurityKey ConfigureSecurityKey(JwtIssuerOptions issuerOptions) {
-      var keyString = issuerOptions.Audience;
-      var keyBytes = Encoding.UTF8.GetBytes(keyString);
-      var signingKey = new JwtSigningKey(keyBytes);
-
-      return signingKey;
     }
   }
 }

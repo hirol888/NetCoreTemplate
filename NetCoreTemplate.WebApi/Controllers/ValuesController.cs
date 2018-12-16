@@ -50,13 +50,5 @@ namespace NetCoreTemplate.WebApi.Controllers {
     [HttpDelete("{id}")]
     public void Delete(int id) {
     }
-
-    [HttpPost("login")]
-    [AllowAnonymous]
-    [ProducesResponseType((int)HttpStatusCode.OK, typeof())]
-    [ProducesErrorResponseType(HttpStatusCode.BadRequest, typeof(Dictionary<string, string>))]
-    public async Task<IActionResult> Login([FromBody] LoginVm parameters) {
-      
-    }
   }
 }

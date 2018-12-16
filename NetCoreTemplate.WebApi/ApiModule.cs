@@ -1,16 +1,9 @@
-﻿using System.Text;
-using NetCoreTemplate.WebApi.Filters;
-using NetCoreTemplate.Common.Models.Options;
-using Autofac;
+﻿using Autofac;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using MediatR;
 using MediatR.Pipeline;
 using NetCoreTemplate.Application.Users.Commands.CreateUser;
 using System.Reflection;
-using AutofacSerilogIntegration;
 using NetCoreTemplate.Application.Infrastructure;
 using NetCoreTemplate.Application.Users.Queries.GetUserDetail;
 
@@ -55,40 +48,6 @@ namespace NetCoreTemplate.WebApi {
         };
       });
       #endregion
-
-      #region Jwt
-      builder.Register(context => {
-        var configurationRoot = context.Resolve<IConfiguration>();
-        var issuerOptions = configurationRoot.GetSection("jwtIssuerOptions").Get<JwtIssuerOptions>();
-
-        var key = ConfigureSecurityKey(issuerOptions);
-
-        return key;
-      }).As<SecurityKey>().SingleInstance();
-
-      builder.Register(context => {
-        var key = context.Resolve<SecurityKey>();
-
-        return new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
-      }).As<SigningCredentials>().SingleInstance();
-
-      builder.Register(context => {
-        var configurationRoot = context.Resolve<IConfiguration>();
-        var issuerOptions = configurationRoot.GetSection("jwtIssuerOptions").Get<JwtIssuerOptions>();
-        var signingCredentials = context.Resolve<SigningCredentials>();
-
-        issuerOptions.SigningCredentials = signingCredentials;
-
-        return new OptionsWrapper<JwtIssuerOptions>(issuerOptions);
-      }).As<IOptions<JwtIssuerOptions>>().InstancePerLifetimeScope();
-      #endregion
-    }
-
-    protected SecurityKey ConfigureSecurityKey(JwtIssuerOptions issuerOptions) {
-      var keyString = issuerOptions.Audience;
-      var keyBytes = Encoding.UTF8.GetBytes(keyString);
-      var signingKey = new SymmetricSecurityKey(keyBytes);
-      return signingKey;
     }
   }
 }
