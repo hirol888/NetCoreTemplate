@@ -8,11 +8,9 @@ using NetCoreTemplate.Application.Exceptions;
 namespace NetCoreTemplate.WebApi.Services {
   public class ExceptionResultBuilder : IExceptionResultBuilder {
     private readonly IHostingEnvironment _hostingEnvironment;
-    private readonly ILogger _logger;
 
-    public ExceptionResultBuilder(IHostingEnvironment hostingEnvironment, ILogger logger) {
+    public ExceptionResultBuilder(IHostingEnvironment hostingEnvironment) {
       _hostingEnvironment = hostingEnvironment;
-      _logger = logger;
     }
 
     public IActionResult Build(Exception exception) {
@@ -63,7 +61,7 @@ namespace NetCoreTemplate.WebApi.Services {
             };
             var eventId = new Microsoft.Extensions.Logging.EventId(statusCode);
 
-            _logger.Error($"{eventId.Name}, {exception}, {message}");
+            Log.Error(exception, ($"{eventId.Name}, {message}"));
 
             return objectResult;
         }

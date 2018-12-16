@@ -20,6 +20,7 @@ namespace NetCoreTemplate.WebApi {
       builder.RegisterAssemblyTypes(ThisAssembly).AsImplementedInterfaces();
       builder.RegisterType<HttpContextAccessor>().As<IHttpContextAccessor>().SingleInstance();
 
+      #region MediatR
       builder.RegisterAssemblyTypes(typeof(IMediator).GetTypeInfo().Assembly).AsImplementedInterfaces();
 
       var mediatrOpenTypes = new[]
@@ -53,11 +54,9 @@ namespace NetCoreTemplate.WebApi {
           return c.TryResolve(t, out o) ? o : null;
         };
       });
-      //builder.RegisterAssemblyTypes(typeof(RequestPreProcessorBehavior<,>).GetTypeInfo().Assembly)
-      //  .AsClosedTypesOf(typeof(IPipelineBehavior<,>)).InstancePerLifetimeScope();
-      //builder.RegisterAssemblyTypes(typeof(CreateUserCommandHandler).GetTypeInfo().Assembly)
-      //  .AsClosedTypesOf(typeof(IRequestHandler<,>)).InstancePerDependency();
+      #endregion
 
+      #region Jwt
       builder.Register(context => {
         var configurationRoot = context.Resolve<IConfiguration>();
         var issuerOptions = configurationRoot.GetSection("jwtIssuerOptions").Get<JwtIssuerOptions>();
@@ -82,9 +81,10 @@ namespace NetCoreTemplate.WebApi {
 
         return new OptionsWrapper<JwtIssuerOptions>(issuerOptions);
       }).As<IOptions<JwtIssuerOptions>>().InstancePerLifetimeScope();
+      #endregion
     }
 
-    protected virtual SecurityKey ConfigureSecurityKey(JwtIssuerOptions issuerOptions) {
+    protected SecurityKey ConfigureSecurityKey(JwtIssuerOptions issuerOptions) {
       var keyString = issuerOptions.Audience;
       var keyBytes = Encoding.UTF8.GetBytes(keyString);
       var signingKey = new SymmetricSecurityKey(keyBytes);

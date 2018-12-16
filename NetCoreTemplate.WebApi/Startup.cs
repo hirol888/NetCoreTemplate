@@ -44,20 +44,18 @@ using AutofacSerilogIntegration;
 namespace NetCoreTemplate.WebApi {
   public class Startup {
     private readonly IConfiguration _configuration;
-    private readonly ILogger<Startup> _logger;
 
-    public Startup(IConfiguration configuration, ILogger<Startup> logger, IHostingEnvironment hostingEnvironment) {
+    public Startup(IConfiguration configuration, IHostingEnvironment hostingEnvironment) {
       _configuration = configuration;
-      _logger = logger;
 
-      _logger.LogInformation($"Constructing for environment: {hostingEnvironment.EnvironmentName}");
+      Log.Information($"Constructing for environment: {hostingEnvironment.EnvironmentName}");
     }
 
     protected IContainer ApplicationContainer { get; private set; }
 
     // This method gets called by the runtime. Use this method to add services to the container.
     public IServiceProvider ConfigureServices(IServiceCollection services) {
-      _logger.LogInformation("Starting: Configure Services");
+      Log.Information("Starting: Configure Services");
 
       services.AddOptions();
 
@@ -185,14 +183,14 @@ namespace NetCoreTemplate.WebApi {
       var provider = new AutofacServiceProvider(ApplicationContainer);
       #endregion
 
-      _logger.LogInformation("Completing: Configure Services");
+      Log.Information("Completing: Configure Services");
 
       return provider;
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     public void Configure(IApplicationBuilder app, IHostingEnvironment env, IConfiguration configuration, IApplicationLifetime appLifetime) {
-      _logger.LogInformation("Starting: Configure");
+      Log.Information("Starting: Configure");
       
 
       app.UseAuthentication();
@@ -209,7 +207,7 @@ namespace NetCoreTemplate.WebApi {
 
       app.UseMvc();
 
-      _logger.LogInformation("Completing: Configure");
+      Log.Information("Completing: Configure");
     }
 
     protected virtual SecurityKey ConfigureSecurityKey(JwtIssuerOptions issuerOptions) {

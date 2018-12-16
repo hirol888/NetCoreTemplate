@@ -7,11 +7,9 @@ using Serilog;
 namespace NetCoreTemplate.Application.Infrastructure {
   public class RequestPerformanceBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> {
     private readonly Stopwatch _timer;
-    private readonly ILogger _logger;
 
-    public RequestPerformanceBehaviour(ILogger logger) {
+    public RequestPerformanceBehaviour() {
       _timer = new Stopwatch();
-      _logger = logger;
     }
 
     public async Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken, RequestHandlerDelegate<TResponse> next) {
@@ -24,7 +22,7 @@ namespace NetCoreTemplate.Application.Infrastructure {
       if (_timer.ElapsedMilliseconds > 500) {
         var name = typeof(TRequest).Name;
 
-        _logger.Warning($"NetCoreTemplate Long Running Request: {name} ({_timer.ElapsedMilliseconds} milliseconds) @{request}");
+        Log.Warning($"NetCoreTemplate Long Running Request: {name} ({_timer.ElapsedMilliseconds} milliseconds) @{request}");
       }
 
       return response;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
@@ -9,6 +10,8 @@ using NetCoreTemplate.Application.Users.Commands.CreateUser;
 using NetCoreTemplate.Application.Users.Queries.GetUserDetail;
 using NetCoreTemplate.Application.Users.Queries.GetUserList;
 using NetCoreTemplate.WebApi.Services;
+using Serilog;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace NetCoreTemplate.WebApi.Controllers {
   [Route("api/[controller]")]
@@ -46,6 +49,14 @@ namespace NetCoreTemplate.WebApi.Controllers {
     // DELETE api/values/5
     [HttpDelete("{id}")]
     public void Delete(int id) {
+    }
+
+    [HttpPost("login")]
+    [AllowAnonymous]
+    [ProducesResponseType((int)HttpStatusCode.OK, typeof())]
+    [ProducesErrorResponseType(HttpStatusCode.BadRequest, typeof(Dictionary<string, string>))]
+    public async Task<IActionResult> Login([FromBody] LoginVm parameters) {
+      
     }
   }
 }
