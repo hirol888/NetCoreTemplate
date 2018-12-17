@@ -34,6 +34,7 @@ using AutoMapper;
 using AutofacSerilogIntegration;
 using NetCoreTemplate.Infrastructure.Auth;
 using NetCoreTemplate.Infrastructure.Identity;
+using System.Collections.Generic;
 
 namespace NetCoreTemplate.WebApi {
   public class Startup {
@@ -176,11 +177,16 @@ namespace NetCoreTemplate.WebApi {
           Title = "Net Core Template API",
           Description = "Net Core Template API"
         });
+        c.AddSecurityDefinition("Bearer", new ApiKeyScheme {
+          In = "header",
+          Description = "Please insert Jwt with Bearer into field",
+          Name = "Authorization",
+          Type = "apiKey"
+        });
 
-        var basePath = PlatformServices.Default.Application.ApplicationBasePath;
-        var xmlPath = Path.Combine(basePath, "NetCoreTemplate.WebApi.xml");
-        c.IncludeXmlComments(xmlPath);
-        c.OperationFilter<AuthorizationHeaderParameterOperationFilter>();
+        c.AddSecurityRequirement(new Dictionary<string, IEnumerable<string>> {
+          { "Bearer", new string[] { } }
+        });
         c.OperationFilter<FormFileOperationFilter>();
       });
       #endregion
