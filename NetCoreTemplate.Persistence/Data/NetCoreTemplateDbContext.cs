@@ -2,7 +2,7 @@
 using NetCoreTemplate.Domain.Entities;
 using NetCoreTemplate.Persistence.Extensions;
 
-namespace NetCoreTemplate.Persistence {
+namespace NetCoreTemplate.Persistence.Data {
   public class NetCoreTemplateDbContext : DbContext {
     public NetCoreTemplateDbContext(DbContextOptions<NetCoreTemplateDbContext> options) : base(options) {}
 

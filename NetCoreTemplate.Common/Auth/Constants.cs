@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace NetCoreTemplate.Infrastructure.Auth {
+namespace NetCoreTemplate.Common.Auth {
   public class Constants {
     public static class Strings {
       public static class JwtClaimIdentifiers {

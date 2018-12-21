@@ -9,17 +9,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using NetCoreTemplate.Application.Users.Commands.CreateUser;
-using NetCoreTemplate.Persistence;
 using NetCoreTemplate.WebApi.Filters;
 using System;
-using System.IO;
 using Autofac.Extensions.DependencyInjection;
 using Autofac;
 using NetCoreTemplate.Common;
-using NetCoreTemplate.Common.Models;
 using System.Text;
 using System.Threading.Tasks;
-using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Newtonsoft.Json.Serialization;
@@ -28,13 +24,13 @@ using Newtonsoft.Json.Converters;
 using Microsoft.AspNetCore.ResponseCompression;
 using System.IO.Compression;
 using Serilog;
-using Microsoft.Extensions.PlatformAbstractions;
 using Swashbuckle.AspNetCore.Swagger;
 using AutoMapper;
 using AutofacSerilogIntegration;
-using NetCoreTemplate.Infrastructure.Auth;
-using NetCoreTemplate.Infrastructure.Identity;
+using NetCoreTemplate.Common.Auth;
 using System.Collections.Generic;
+using NetCoreTemplate.Persistence.Data;
+using NetCoreTemplate.Persistence.Identity;
 
 namespace NetCoreTemplate.WebApi {
   public class Startup {
@@ -119,7 +115,7 @@ namespace NetCoreTemplate.WebApi {
       });
 
       identityBuilder = new IdentityBuilder(identityBuilder.UserType, typeof(IdentityRole), identityBuilder.Services);
-      identityBuilder.AddEntityFrameworkStores<NetCoreTemplateDbContext>().AddDefaultTokenProviders();
+      identityBuilder.AddEntityFrameworkStores<NetCoreTemplateIdentityDbContext>().AddDefaultTokenProviders();
       #endregion
 
       services.AddAutoMapper();
@@ -138,7 +134,9 @@ namespace NetCoreTemplate.WebApi {
       #endregion
 
       services.AddDbContext<NetCoreTemplateDbContext>(options =>
-          options.UseSqlServer(_configuration.GetConnectionString("NetCoreTemplateDatabase")));
+          options.UseSqlServer(_configuration.GetConnectionString("NetCoreTemplateDatabase"), b => b.MigrationsAssembly("NetCoreTemplate.Persistence")));
+      services.AddDbContext<NetCoreTemplateIdentityDbContext>(options =>
+          options.UseSqlServer(_configuration.GetConnectionString("NetCoreTemplateDatabase"), b => b.MigrationsAssembly("NetCoreTemplate.Persistence")));
 
       #region AddMvc
       services.AddMvc(o => {

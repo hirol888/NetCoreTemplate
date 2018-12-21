@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using NetCoreTemplate.Persistence.Data;
 
 namespace NetCoreTemplate.Persistence.Extensions {
   public static class ModelBuilderExtensions {
