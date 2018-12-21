@@ -1,6 +1,6 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
-using NetCoreTemplate.Persistence;
+using NetCoreTemplate.Persistence.Data;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;

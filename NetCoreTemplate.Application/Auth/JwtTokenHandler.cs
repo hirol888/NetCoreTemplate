@@ -8,10 +8,10 @@ using System.Security.Claims;
 using System.Text;
 
 namespace NetCoreTemplate.Application.Auth {
-  internal sealed class JwtTokenHandler : IJwtTokenHandler {
+  public sealed class JwtTokenHandler : IJwtTokenHandler {
     private readonly JwtSecurityTokenHandler _jwtSecurityTokenHandler;
 
-    internal JwtTokenHandler() {
+    public JwtTokenHandler() {
       if (_jwtSecurityTokenHandler == null) {
         _jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
       }

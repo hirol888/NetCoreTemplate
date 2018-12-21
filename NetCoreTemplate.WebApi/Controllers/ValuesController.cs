@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using NetCoreTemplate.Application.Users.Commands.CreateUser;
+using NetCoreTemplate.Application.Auth.Commands.Register;
 using NetCoreTemplate.Application.Users.Queries.GetUserDetail;
 using NetCoreTemplate.Application.Users.Queries.GetUserList;
 using NetCoreTemplate.WebApi.Services;
@@ -35,7 +35,7 @@ namespace NetCoreTemplate.WebApi.Controllers {
     // POST api/values
     [HttpPost]
     [AllowAnonymous]
-    public async Task<ActionResult> Create([FromBody] CreateUserCommand value) {
+    public async Task<ActionResult> Create([FromBody] RegisterCommand value) {
       await Mediator.Send(value);
 
       return NoContent();

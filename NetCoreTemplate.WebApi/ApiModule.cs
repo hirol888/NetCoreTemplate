@@ -2,16 +2,22 @@
 using Microsoft.AspNetCore.Http;
 using MediatR;
 using MediatR.Pipeline;
-using NetCoreTemplate.Application.Users.Commands.CreateUser;
+using NetCoreTemplate.Application.Auth.Commands.Register;
 using System.Reflection;
 using NetCoreTemplate.Application.Infrastructure;
 using NetCoreTemplate.Application.Users.Queries.GetUserDetail;
+using NetCoreTemplate.Application.Interfaces.Auth;
+using NetCoreTemplate.Application.Auth;
 
 namespace NetCoreTemplate.WebApi {
   public class ApiModule : Autofac.Module {
     protected override void Load(ContainerBuilder builder) {
       builder.RegisterAssemblyTypes(ThisAssembly).AsImplementedInterfaces();
       builder.RegisterType<HttpContextAccessor>().As<IHttpContextAccessor>().SingleInstance();
+
+      builder.RegisterType<JwtFactory>().As<IJwtFactory>().SingleInstance();
+      builder.RegisterType<JwtTokenHandler>().As<IJwtTokenHandler>().SingleInstance();
+      builder.RegisterType<TokenFactory>().As<ITokenFactory>().SingleInstance();
 
       #region MediatR
       builder.RegisterAssemblyTypes(typeof(IMediator).GetTypeInfo().Assembly).AsImplementedInterfaces();
@@ -25,7 +31,7 @@ namespace NetCoreTemplate.WebApi {
       foreach (var mediatrOpenType in mediatrOpenTypes) {
         // Register all command handler in the same assembly as WriteLogMessageCommandHandler
         builder
-            .RegisterAssemblyTypes(typeof(CreateUserCommandHandler).GetTypeInfo().Assembly)
+            .RegisterAssemblyTypes(typeof(RegisterCommandHandler).GetTypeInfo().Assembly)
             .AsClosedTypesOf(mediatrOpenType)
             .AsImplementedInterfaces();
 

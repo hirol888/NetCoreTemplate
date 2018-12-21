@@ -8,7 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using NetCoreTemplate.Application.Users.Commands.CreateUser;
+using NetCoreTemplate.Application.Auth.Commands.Register;
 using NetCoreTemplate.WebApi.Filters;
 using System;
 using Autofac.Extensions.DependencyInjection;
@@ -160,7 +160,7 @@ namespace NetCoreTemplate.WebApi {
         };
       })
       .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
-      .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<CreateUserCommandValidator>());
+      .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<RegisterCommandValidator>());
       #endregion
 
       #region Config Compression
@@ -195,7 +195,7 @@ namespace NetCoreTemplate.WebApi {
       var autofacBuilder = new ContainerBuilder();
 
       autofacBuilder.Register(ctx => _configuration).As<IConfiguration>();
-      autofacBuilder.RegisterModule(new CommonModule());
+      //autofacBuilder.RegisterModule(new CommonModule());
       autofacBuilder.RegisterModule(new ApiModule());
       autofacBuilder.RegisterLogger();
 

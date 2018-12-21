@@ -1,10 +1,7 @@
 ﻿using MediatR;
 using NetCoreTemplate.Application.Exceptions;
 using NetCoreTemplate.Domain.Entities;
-using NetCoreTemplate.Persistence;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using NetCoreTemplate.Persistence.Data;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,12 +23,11 @@ namespace NetCoreTemplate.Application.Users.Queries.GetUserDetail {
 
       return new UserDetailModel {
         Id = entity.Id,
-        Password = entity.Password,
         Email = entity.Email,
         Active = entity.Active,
         Deleted = entity.Deleted,
         LastIpAddress = entity.LastIpAddress,
-        CreateAtUtc = entity.CreateAtUtc,
+        CreateAtUtc = entity.CreatedAtUtc,
         LastLoginDateUtc = entity.LastLoginDateUtc,
         FirstName = entity.FirstName,
         LastName = entity.LastName,

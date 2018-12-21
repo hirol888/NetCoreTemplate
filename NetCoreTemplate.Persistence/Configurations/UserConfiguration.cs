@@ -11,6 +11,7 @@ namespace NetCoreTemplate.Persistence.Configurations {
         .ValueGeneratedOnAdd();
 
       builder.Property(e => e.FirstName).HasMaxLength(50);
+      builder.Property(e => e.LastName).HasMaxLength(50);
     }
   }
 }

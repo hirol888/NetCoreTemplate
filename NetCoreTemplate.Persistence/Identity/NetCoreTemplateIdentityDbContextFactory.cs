@@ -1,8 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Microsoft.EntityFrameworkCore;
+using NetCoreTemplate.Persistence.Infrastructure;
 
 namespace NetCoreTemplate.Persistence.Identity {
-  class NetCoreTemplateIdentityDbContextFactory {
+  public class NetCoreTemplateIdentityDbContextFactory : DesignTimeDbContextFactoryBase<NetCoreTemplateIdentityDbContext> {
+    protected override NetCoreTemplateIdentityDbContext CreateNewInstance(DbContextOptions<NetCoreTemplateIdentityDbContext> options) {
+      return new NetCoreTemplateIdentityDbContext(options);
+    }
   }
 }
