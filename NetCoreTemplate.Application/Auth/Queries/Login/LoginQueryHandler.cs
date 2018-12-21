@@ -29,7 +29,7 @@ namespace NetCoreTemplate.Application.Auth.Queries.Login {
 
     public async Task<LoginResponseViewModel> Handle(LoginQuery request, CancellationToken cancellationToken) {
       var appUser = await _userManager.FindByNameAsync(request.UserName);
-      var user = appUser == null ? null : _mapper.Map(appUser, await _context.User.Where(u => u.UserName.Equals(appUser.UserName)).FirstOrDefaultAsync());
+      var user = appUser == null ? null : _mapper.Map(appUser, await _context.User.Where(u => u.IdentityId.Equals(appUser.Id)).FirstOrDefaultAsync());
       if (user != null) {
         if (await _userManager.CheckPasswordAsync(appUser, request.Password)) {
           var refreshToken = _tokenFactory.GenerateToken();
