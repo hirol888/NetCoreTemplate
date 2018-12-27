@@ -21,11 +21,11 @@ namespace NetCoreTemplate.Application.Auth {
       ThrowIfInvalidOptions(_jwtOptions);
     }
 
-    public async Task<AccessToken> GenerateEncodedToken(string id, string userName) {
-      var identity = GenerateClaimsIdentity(id, userName);
+    public async Task<AccessToken> GenerateEncodedToken(string id, string email) {
+      var identity = GenerateClaimsIdentity(id, email);
 
       var claims = new[] {
-        new Claim(JwtRegisteredClaimNames.Sub, userName),
+        new Claim(JwtRegisteredClaimNames.Sub, email),
         new Claim(JwtRegisteredClaimNames.Jti, await _jwtOptions.JtiGenerator()),
         new Claim(JwtRegisteredClaimNames.Iat, ToUnixEpochDate(_jwtOptions.IssueAt).ToString(), ClaimValueTypes.Integer64),
         identity.FindFirst(Constants.Strings.JwtClaimIdentifiers.Rol),
@@ -43,8 +43,8 @@ namespace NetCoreTemplate.Application.Auth {
       return new AccessToken(_jwtTokenHandler.WriteToken(jwt), (int)_jwtOptions.ValidFor.TotalSeconds);
     }
 
-    private static ClaimsIdentity GenerateClaimsIdentity(string id, string userName) {
-      return new ClaimsIdentity(new GenericIdentity(userName, "Token"), new[] {
+    private static ClaimsIdentity GenerateClaimsIdentity(string id, string email) {
+      return new ClaimsIdentity(new GenericIdentity(email, "Token"), new[] {
         new Claim(Constants.Strings.JwtClaimIdentifiers.Id, id),
         new Claim(Constants.Strings.JwtClaimIdentifiers.Rol, Constants.Strings.JwtClaims.ApiAccess)
       });

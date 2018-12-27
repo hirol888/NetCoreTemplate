@@ -2,12 +2,12 @@
 
 namespace NetCoreTemplate.Application.Auth.Queries.Login {
   public class LoginQuery : IRequest<LoginResponseViewModel> {
-    public string UserName { get; set; }
+    public string Email { get; set; }
     public string Password { get; set; }
     public string RemoteIpAddress { get; set; }
 
-    public LoginQuery(string userName, string password, string remoteIpAddress) {
-      UserName = userName;
+    public LoginQuery(string email, string password, string remoteIpAddress) {
+      Email = email;
       Password = password;
       RemoteIpAddress = remoteIpAddress;
     }

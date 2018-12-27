@@ -1,23 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NetCoreTemplate.Application.Auth.Commands.Register;
 using NetCoreTemplate.Application.Users.Queries.GetUserDetail;
 using NetCoreTemplate.Application.Users.Queries.GetUserList;
-using NetCoreTemplate.WebApi.Services;
-using Serilog;
-using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace NetCoreTemplate.WebApi.Controllers {
   [Route("api/[controller]")]
   [ApiController]
   public class ValuesController : ApiBaseController {
-    public ValuesController(IMapper mapper, IServiceInvoker serviceInvoker) : base(mapper, serviceInvoker) { }
     // GET api/values
     [HttpGet]
     [AllowAnonymous]

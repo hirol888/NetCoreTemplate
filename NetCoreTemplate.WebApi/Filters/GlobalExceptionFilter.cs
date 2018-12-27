@@ -1,6 +1,6 @@
 ﻿using System;
-using NetCoreTemplate.WebApi.Services;
 using Microsoft.AspNetCore.Mvc.Filters;
+using NetCoreTemplate.WebApi.Filters.ExceptionResult;
 
 namespace NetCoreTemplate.WebApi.Filters {
   public class GlobalExceptionFilter : IExceptionFilter, IDisposable {

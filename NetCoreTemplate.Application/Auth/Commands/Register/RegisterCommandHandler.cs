@@ -1,16 +1,14 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Identity;
+using NetCoreTemplate.Application.Exceptions;
 using NetCoreTemplate.Domain.Entities;
 using NetCoreTemplate.Persistence.Data;
-using NetCoreTemplate.Persistence.Identity;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace NetCoreTemplate.Application.Auth.Commands.Register {
-  public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Unit> {
+  public class RegisterCommandHandler : IRequestHandler<RegisterCommand, int> {
     private readonly UserManager<AppUser> _userManager;
     private NetCoreTemplateDbContext _context;
 
@@ -18,22 +16,22 @@ namespace NetCoreTemplate.Application.Auth.Commands.Register {
       _userManager = userManager;
       _context = context;
     }
-    public async Task<Unit> Handle(RegisterCommand request, CancellationToken cancellationToken) {
+    public async Task<int> Handle(RegisterCommand request, CancellationToken cancellationToken) {
       var appUser = new AppUser {
-        Email = request.Email,
-        UserName = request.UserName
+        UserName = request.Email,
+        Email = request.Email
       };
       var identityResult = await _userManager.CreateAsync(appUser, request.Password);
 
       if (!identityResult.Succeeded) {
-        throw new Exception();
+        throw new RegisterFailedException(identityResult.Errors);
       }
 
-      var user = new User(request.FirstName, request.LastName, appUser.Id, appUser.UserName);
+      var user = new User(request.FirstName, request.LastName, appUser.Id, appUser.Email);
       _context.User.Add(user);
       await _context.SaveChangesAsync();
 
-      return Unit.Value;
+      return user.Id;
     }
   }
 }

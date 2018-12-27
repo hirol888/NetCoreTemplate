@@ -18,6 +18,7 @@ namespace NetCoreTemplate.WebApi {
       builder.RegisterType<JwtFactory>().As<IJwtFactory>().SingleInstance();
       builder.RegisterType<JwtTokenHandler>().As<IJwtTokenHandler>().SingleInstance();
       builder.RegisterType<TokenFactory>().As<ITokenFactory>().SingleInstance();
+      builder.RegisterType<JwtTokenValidator>().As<IJwtTokenValidator>().SingleInstance();
 
       #region MediatR
       builder.RegisterAssemblyTypes(typeof(IMediator).GetTypeInfo().Assembly).AsImplementedInterfaces();

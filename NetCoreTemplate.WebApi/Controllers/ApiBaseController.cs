@@ -6,29 +6,18 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using NetCoreTemplate.Application.Exceptions;
-using NetCoreTemplate.WebApi.Services;
-using Swashbuckle.AspNetCore.SwaggerGen;
 using Microsoft.Extensions.DependencyInjection;
+using NetCoreTemplate.WebApi.Filters.ExceptionResult;
 
 namespace NetCoreTemplate.WebApi.Controllers {
-  [ProducesResponseType(typeof(void), (int)HttpStatusCode.NotFound)]
-  [ProducesResponseType(typeof(ValidationError[]), (int)HttpStatusCode.BadRequest)]
-  [ProducesResponseType(typeof(ApiError), (int)HttpStatusCode.InternalServerError)]
   [Route("api/[controller]")]
   public abstract class ApiBaseController : Controller {
-    protected ApiBaseController(IMapper mapper, IServiceInvoker serviceInvoker) {
-      Mapper = mapper;
-      ServiceInvoker = serviceInvoker;
-    }
-
-    protected IMapper Mapper { get; }
-    protected IServiceInvoker ServiceInvoker { get; }
     private IMediator _mediator;
 
     protected IMediator Mediator => _mediator ?? (_mediator = HttpContext.RequestServices.GetService<IMediator>());
 
     public override void OnActionExecuting(ActionExecutingContext context) {
-      if (!context.ModelState.IsValid)
+      if (!context.ModelState.IsValid) {
         if (!ModelState.IsValid) {
           var errorList = ModelState.ToDictionary(
               kvp => kvp.Key,
@@ -40,6 +29,7 @@ namespace NetCoreTemplate.WebApi.Controllers {
 
           throw new ApiException<IDictionary<string, string[]>>("Invalid request", errorList);
         }
+      }
 
       base.OnActionExecuting(context);
     }

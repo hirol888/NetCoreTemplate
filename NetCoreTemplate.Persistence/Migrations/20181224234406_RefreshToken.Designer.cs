@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetCoreTemplate.Persistence.Data;
 
 namespace NetCoreTemplate.Persistence.Migrations
 {
     [DbContext(typeof(NetCoreTemplateDbContext))]
-    partial class NetCoreTemplateDbContextModelSnapshot : ModelSnapshot
+    [Migration("20181224234406_RefreshToken")]
+    partial class RefreshToken
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

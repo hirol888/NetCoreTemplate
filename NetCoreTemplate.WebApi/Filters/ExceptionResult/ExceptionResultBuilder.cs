@@ -4,8 +4,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using NetCoreTemplate.Application.Exceptions;
+using NetCoreTemplate.WebApi.Filters.ExceptionResult;
 
-namespace NetCoreTemplate.WebApi.Services {
+namespace NetCoreTemplate.WebApi.Filters.ExceptionResult {
   public class ExceptionResultBuilder : IExceptionResultBuilder {
     private readonly IHostingEnvironment _hostingEnvironment;
 
@@ -25,15 +26,6 @@ namespace NetCoreTemplate.WebApi.Services {
             var dependencyResolutionException = exception as DependencyResolutionException;
             if (dependencyResolutionException != null)
                 message = $"Dependency Exception: Please ensure that classes implement the interface: {message}";
-
-            var notFoundException = exception as NotFoundException;
-            if (notFoundException != null)
-                return new NotFoundResult();
-
-            var deleteFailureException = exception as DeleteFailureException;
-            if (deleteFailureException != null)
-                return new BadRequestResult();
-
 
             var apiException = exception as ApiException;
 

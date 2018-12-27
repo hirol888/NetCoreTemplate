@@ -31,6 +31,7 @@ using NetCoreTemplate.Common.Auth;
 using System.Collections.Generic;
 using NetCoreTemplate.Persistence.Data;
 using NetCoreTemplate.Persistence.Identity;
+using NetCoreTemplate.Domain.Entities;
 
 namespace NetCoreTemplate.WebApi {
   public class Startup {

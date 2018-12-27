@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace NetCoreTemplate.WebApi.Services
+namespace NetCoreTemplate.WebApi.Filters.ExceptionResult
 {
   public class ApiError
   {

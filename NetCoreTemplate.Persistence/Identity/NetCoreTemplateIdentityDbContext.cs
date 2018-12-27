@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using NetCoreTemplate.Domain.Entities;
 
 namespace NetCoreTemplate.Persistence.Identity {
   public class NetCoreTemplateIdentityDbContext : IdentityDbContext<AppUser> {
